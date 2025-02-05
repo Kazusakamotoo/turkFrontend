@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "../App.css";
 
+const API_URL = "https://turkbackend.onrender.com"; // ✅ Update to Render backend URL
+
 const BoundingBoxAnnotation = () => {
   const [images, setImages] = useState([]);
   const [imageIds, setImageIds] = useState([]);
@@ -15,7 +17,7 @@ const BoundingBoxAnnotation = () => {
   }, []);
 
   const fetchNewImage = () => {
-    fetch("http://127.0.0.1:5000/api/image")
+    fetch(`${API_URL}/api/image`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
@@ -75,7 +77,7 @@ const BoundingBoxAnnotation = () => {
       annotations: imageIds.map((id, index) => ({ image_id: id, bounding_boxes: boundingBoxes[index] })),
     };
 
-    const response = await fetch("http://127.0.0.1:5000/api/submit", {
+    const response = await fetch(`${API_URL}/api/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(annotationData),
