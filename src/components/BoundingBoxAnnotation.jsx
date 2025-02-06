@@ -20,17 +20,20 @@ const BoundingBoxAnnotation = () => {
     fetch(`${API_URL}/api/image`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.error) {
-          console.error("Error fetching image:", data.error);
+  
+        if (!data.image_url) {
+          alert("Error loading image. Please refresh.");
           return;
         }
-
+  
         setImages((prevImages) => [...prevImages, data.image_url]);
         setImageIds((prevImageIds) => [...prevImageIds, data.image_id]);
+  
         setBoundingBoxes((prevBoxes) => [...prevBoxes, []]);
       })
-      .catch((err) => console.error("Error fetching image:", err));
+      .catch((err) => console.error("Fetch error:", err));
   };
+  
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -54,9 +57,9 @@ const BoundingBoxAnnotation = () => {
   };
 
   const handleMouseUp = () => {
-    if (!currentBox || currentBox.width < 5 || currentBox.height < 5) return;
+    if (!currentBox || currentBox.width < 5 || currentBox.height < 5) return; 
     const updatedBoxes = [...boundingBoxes];
-    updatedBoxes[selectedImageIndex].push(currentBox);
+    updatedBoxes[selectedImageIndex] = [currentBox]; 
     setBoundingBoxes(updatedBoxes);
     setCurrentBox(null);
     setDrawing(false);
@@ -118,21 +121,20 @@ const BoundingBoxAnnotation = () => {
               }}
               draggable="false"
             />
-            {boundingBoxes[selectedImageIndex].map((box, index) => (
+            {boundingBoxes[selectedImageIndex]?.length > 0 && (
               <div
-                key={index}
                 className="bounding-box"
                 style={{
                   position: "absolute",
-                  left: box.x,
-                  top: box.y,
-                  width: box.width,
-                  height: box.height,
+                  left: boundingBoxes[selectedImageIndex][0].x,
+                  top: boundingBoxes[selectedImageIndex][0].y,
+                  width: boundingBoxes[selectedImageIndex][0].width,
+                  height: boundingBoxes[selectedImageIndex][0].height,
                   border: "2px solid red",
                   backgroundColor: "rgba(255, 0, 0, 0.2)",
                 }}
               />
-            ))}
+            )}
             {currentBox && (
               <div
                 className="bounding-box"
