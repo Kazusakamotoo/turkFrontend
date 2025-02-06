@@ -87,7 +87,7 @@ const BoundingBoxAnnotation = () => {
     });
 
     const result = await response.json();
-    alert(result.message || "Error submitting annotation");
+    alert("Survey code is 123");
   };
 
   return (
