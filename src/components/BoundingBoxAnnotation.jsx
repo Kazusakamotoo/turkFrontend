@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 
 const API_URL = "https://turkbackend.onrender.com"; 
@@ -11,6 +12,8 @@ const BoundingBoxAnnotation = () => {
   const [workerId, setWorkerId] = useState("worker_123");
   const [currentBox, setCurrentBox] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const navigate = useNavigate();
 
   const startX = useRef(0);
   const startY = useRef(0);
@@ -96,7 +99,10 @@ const handleMouseUp = () => {
   const handleSubmit = async () => {
     const annotationData = {
       worker_id: workerId,
-      annotations: imageIds.map((id, index) => ({ image_id: id, bounding_boxes: boundingBoxes[index] })),
+      annotations: imageIds.map((id, index) => ({
+        image_id: id,
+        bounding_boxes: boundingBoxes[index] || [],
+      })),
     };
 
     const response = await fetch(`${API_URL}/api/submit`, {
@@ -106,7 +112,8 @@ const handleMouseUp = () => {
     });
 
     const result = await response.json();
-    alert(result.message + " Survey Code is 123" || "Error submitting annotation");
+
+    navigate(`/completion`);
   };
 
   return (
