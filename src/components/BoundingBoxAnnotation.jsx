@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../App.css";
 
 const API_URL = "https://turkbackend.onrender.com"; 
@@ -11,6 +11,9 @@ const BoundingBoxAnnotation = () => {
   const [workerId, setWorkerId] = useState("worker_123");
   const [currentBox, setCurrentBox] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const startX = useRef(0);
+  const startY = useRef(0);
 
   useEffect(() => {
     fetchNewImage();
@@ -35,35 +38,51 @@ const BoundingBoxAnnotation = () => {
   };
   
 
-  const handleMouseDown = (e) => {
-    e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setCurrentBox({ x, y, width: 0, height: 0 });
-    setDrawing(true);
-  };
+const handleMouseDown = (e) => {
+  e.preventDefault();
+  const rect = e.currentTarget.getBoundingClientRect();
+  startX.current = e.clientX - rect.left;
+  startY.current = e.clientY - rect.top;
 
-  const handleMouseMove = (e) => {
-    if (!drawing) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const endX = e.clientX - rect.left;
-    const endY = e.clientY - rect.top;
-    setCurrentBox((prevBox) => ({
-      ...prevBox,
-      width: Math.abs(endX - prevBox.x),
-      height: Math.abs(endY - prevBox.y),
-    }));
-  };
+  setCurrentBox({
+    x: startX.current,
+    y: startY.current,
+    width: 0,
+    height: 0,
+  });
 
-  const handleMouseUp = () => {
-    if (!currentBox || currentBox.width < 5 || currentBox.height < 5) return; 
-    const updatedBoxes = [...boundingBoxes];
-    updatedBoxes[selectedImageIndex] = [currentBox]; 
-    setBoundingBoxes(updatedBoxes);
-    setCurrentBox(null);
-    setDrawing(false);
-  };
+  setDrawing(true);
+};
+
+const handleMouseMove = (e) => {
+  if (!drawing) return;
+
+  const rect = e.currentTarget.getBoundingClientRect();
+  const endX = e.clientX - rect.left;
+  const endY = e.clientY - rect.top;
+
+  setCurrentBox({
+    x: Math.min(startX.current, endX),
+    y: Math.min(startY.current, endY),
+    width: Math.abs(endX - startX.current),
+    height: Math.abs(endY - startY.current),
+  });
+};
+
+const handleMouseUp = () => {
+  if (!drawing) return;
+  setDrawing(false);
+
+  if (!currentBox || currentBox.width < 5 || currentBox.height < 5) {
+    return;
+  }
+
+  const updatedBoxes = [...boundingBoxes];
+  updatedBoxes[selectedImageIndex] = [currentBox]; 
+  
+  setBoundingBoxes(updatedBoxes);
+  setCurrentBox(null);
+};
 
   const handleNextImage = () => {
     if (selectedImageIndex < 2) { 
@@ -93,7 +112,7 @@ const BoundingBoxAnnotation = () => {
   return (
     <div className="annotation-container">
       <p className="instructions">
-        Please create one bounding box around animals present in the picture. Inanimate pictures of animals should be included. If there is a group of animals, please select the largest group.
+        Please create one bounding box around animals present in the picture. Humans do not count as animals. If the animal in the image is a drawing or picture of an animal, it should still be included. If there is a group of animals, please select the largest group at your convinience.
       </p>
       {images.length > 0 && (
         <>
