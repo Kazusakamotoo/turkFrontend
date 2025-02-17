@@ -1,6 +1,6 @@
 import React from "react";
 
-const COMPLETION_CODE = "123"; 
+const COMPLETION_CODE =  Math.floor(10000 + Math.random() * 90000);
 const CompletionPage = () => {
   return (
     <div className="completion-container">
