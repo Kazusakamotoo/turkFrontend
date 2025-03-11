@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 
-const API_URL = "https://turkbackendai.onrender.com"; 
+const API_URL = "http://127.0.0.1:5000"; 
 
 const BoundingBoxAnnotation = () => {
   const [images, setImages] = useState([]);
@@ -90,17 +90,22 @@ const BoundingBoxAnnotation = () => {
   const handleMouseUp = () => {
     if (!drawing) return;
     setDrawing(false);
-
+  
     if (!currentBox || currentBox.width < 5 || currentBox.height < 5) {
-        return;
+      return;
     }
-
+  
+    const finalizedBox = {
+      ...currentBox,
+      createdAt: Date.now(), 
+    };
+  
     const updatedBoxes = [...boundingBoxes];
-    updatedBoxes[selectedImageIndex] = [currentBox];
-
+    updatedBoxes[selectedImageIndex] = [finalizedBox];
+  
     setBoundingBoxes(updatedBoxes);
     setCurrentBox(null);
-};
+  };
 
 const handleValidateClick = () => {
   if (!boundingBoxes[selectedImageIndex]?.length) {
